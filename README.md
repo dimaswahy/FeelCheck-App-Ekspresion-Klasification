@@ -38,6 +38,7 @@
 </ul>
 <hr data-start="859" data-end="862">
 <h2 data-start="864" data-end="884">📸 Cuplikan Layar</h2>
+<img src="assets/gambar/Untitled.png" alt="Cuplikan Layar FeelCheck">
 <div class="_tableContainer_80l1q_1"><div tabindex="-1" class="_tableWrapper_80l1q_14 group flex w-fit flex-col-reverse">
 
 
@@ -113,5 +114,6 @@ assets/
 <p data-start="2092" data-end="2116"><strong data-start="2092" data-end="2105">LinkedIn:</strong> [Jika ada]</p></li></ul><!--EndFragment-->
 </body>
 </html>
-#   F e e l C h e c k - A p p - E k s p r e s i o n - K l a s i f i c a t i o n  
+#   F e e l C h e c k - A p p - E k s p r e s i o n - K l a s i f i c a t i o n 
+ 
  
