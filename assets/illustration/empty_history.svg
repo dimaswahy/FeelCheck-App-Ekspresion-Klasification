@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="300px" height="300px" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" fill-rule="evenodd">
+    <circle cx="32" cy="32" r="32" fill="#E3F2FD"/>
+    <g transform="translate(14 14)">
+      <rect fill="#BBDEFB" x="0" y="0" width="36" height="36" rx="4"/>
+      <path d="M4 6h28v24H4z" fill="#E3F2FD"/>
+      <path d="M8 18l4 4 8-8 8 8 4-4v10H8z" fill="#90CAF9"/>
+      <circle fill="#42A5F5" cx="12" cy="12" r="3"/>
+    </g>
+    <text x="32" y="56" text-anchor="middle" font-size="5" fill="#90A4AE">No History</text>
+  </g>
+</svg>
