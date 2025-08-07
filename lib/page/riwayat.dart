@@ -88,10 +88,12 @@ class RiwayatPage extends StatelessWidget {
             );
           }
 
+          final reversedItems = box.values.toList().reversed.toList();
+
           return ListView.builder(
-            itemCount: box.length + 1,
+            itemCount: reversedItems.length + 1,
             itemBuilder: (context, index) {
-              if (index == box.length) {
+              if (index == reversedItems.length) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Center(
@@ -103,7 +105,10 @@ class RiwayatPage extends StatelessWidget {
                 );
               }
 
-              final item = box.getAt(index)!;
+              final item = reversedItems[index];
+              final confidenceText = item.confidence == 0.0
+                  ? "kepercayaan: N/A"
+                  : "kepercayaan: ${(item.confidence * 100).toStringAsFixed(1)}%";
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -121,7 +126,8 @@ class RiwayatPage extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    "Ekspresi: ${item.expression}",
+                    "Ekspresi: ${item.expression}\n"
+                    "$confidenceText",
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -129,9 +135,20 @@ class RiwayatPage extends StatelessWidget {
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      dateFormat.format(item.dateTime),
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        children: [
+                          TextSpan(text: "${dateFormat.format(item.dateTime)}\n"),
+                          TextSpan(
+                            text: item.isCorrect ? "Benar" : "Salah",
+                            style: TextStyle(
+                              color: item.isCorrect ? Colors.green : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   isThreeLine: true,

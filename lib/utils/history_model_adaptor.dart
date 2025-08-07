@@ -26,18 +26,24 @@ class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
       expression: fields[0] as String,
       imagePath: fields[1] as String,
       dateTime: dateTime,
+      isCorrect: fields[3] as bool? ?? false,
+      confidence: fields[4] as double? ?? 0.0, // Tambahkan default jika null
     );
   }
 
   @override
   void write(BinaryWriter writer, HistoryModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(5) // jumlah total field = 5
       ..writeByte(0)
       ..write(obj.expression)
       ..writeByte(1)
       ..write(obj.imagePath)
       ..writeByte(2)
-      ..write(obj.dateTime);
+      ..write(obj.dateTime)
+      ..writeByte(3)
+      ..write(obj.isCorrect)
+      ..writeByte(4)
+      ..write(obj.confidence); // Tambahkan confidence
   }
 }

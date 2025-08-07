@@ -25,7 +25,7 @@ class _LandingpageState extends State<Landingpage> with SingleTickerProviderStat
     });
 
     // Fade out before navigating
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 2), () {
       setState(() {
         _opacity = 0.0;
       });

@@ -82,6 +82,7 @@ flutter:
     - assets/gambar/
     - assets/logo/
     - assets/emosi.tflite
+    - assets/model_non.tflite
     - assets/label_klasifikasi.txt
     - assets/illustration/empty_face.svg
     - assets/illustration/camera_instruction.svg
