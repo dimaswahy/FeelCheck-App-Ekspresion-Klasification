@@ -45,10 +45,14 @@ Aplikasi ini menggunakan dataset **USK FEMO** yang berisi 5 kelas ekspresi wajah
 
    flutter run
 
+---
+
 ## 📸 Cuplikan Layar
 
 ![Cuplikan Layar](assets/gambar/Untitled.png)
+
 ---
+
 ## 🧠 Model AI
 Model deep learning yang digunakan dilatih dengan dataset USK FEMO:
 
@@ -69,7 +73,9 @@ Kelas Output:
 5. Bosan
 
 Model diekspor ke TensorFlow Lite untuk performa tinggi di perangkat mobile.
+
 ---
+
 ## 📂 Struktur Proyek
 lib/
  ├── main.dart                # Entry point aplikasi
