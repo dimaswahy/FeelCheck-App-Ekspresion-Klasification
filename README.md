@@ -41,10 +41,8 @@ Aplikasi ini menggunakan dataset **USK FEMO** yang berisi 5 kelas ekspresi wajah
    git clone https://github.com/dimaswahy/FeelCheck-App-Ekspresion-Klasification.git
    cd FeelCheck-App-Ekspresion-Klasification
 
-   ```bash
    flutter pub get
 
-   ```bash
    flutter run
 
 ## 📸 Cuplikan Layar
@@ -79,15 +77,22 @@ lib/
  ├── utils/                   # Fungsi popup konfirmasi, helper
  ├── models/                  # Model data dan fungsi parsing
  └── assets/                  # Gambar & ilustrasi SVG
+
+
 ---
+
 ## APK Release
 Link Download : https://www.mediafire.com/file/s59zyxmxcz5zduv/app-release.apk/file
+
+
 ---
+
+
 ## 👨‍💻 Pengembang
 - Nama: Dimas Wahyu Nugraha
 
 - Email: ....@gmail.com
 
-L- inkedIn: https://www.linkedin.com/in/dimas-wahyu-nugraha-99518a194/
+- LinkedIn: https://www.linkedin.com/in/dimas-wahyu-nugraha-99518a194/
 
 # FeelCheck-App-Ekspresion-Klasification
