@@ -99,8 +99,8 @@ assets/
 </li>
 </ul>
 <hr data-start="1850" data-end="1853">
-<h2 data-start="1855" data-end="1871">🙏 Kontribusi</h2>
-<p data-start="1873" data-end="1994">Pull request untuk perbaikan bug atau penambahan fitur sangat diterima. Silakan buka issue terlebih dahulu untuk diskusi.</p>
+<h2 data-start="1855" data-end="1871">APK Release</h2>
+<p data-start="1873" data-end="1994"> Link Download : https://www.mediafire.com/file/s59zyxmxcz5zduv/app-release.apk/file</p>
 <hr data-start="1996" data-end="1999">
 <h2 data-start="2001" data-end="2016">👤 Developer</h2>
 <ul data-start="2018" data-end="2116">
