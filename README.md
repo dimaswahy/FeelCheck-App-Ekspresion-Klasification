@@ -76,17 +76,6 @@ Model diekspor ke TensorFlow Lite untuk performa tinggi di perangkat mobile.
 
 ---
 
-## 📂 Struktur Proyek
-lib/
- ├── main.dart                # Entry point aplikasi
- ├── pages/                   # Halaman utama, hasil, dan riwayat
- ├── utils/                   # Fungsi popup konfirmasi, helper
- ├── models/                  # Model data dan fungsi parsing
- └── assets/                  # Gambar & ilustrasi SVG
-
-
----
-
 ## APK Release
 Link Download : https://www.mediafire.com/file/s59zyxmxcz5zduv/app-release.apk/file
 
