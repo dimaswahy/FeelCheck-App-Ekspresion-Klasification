@@ -478,7 +478,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
         children: [
           const Text(
             'Ekspresi:',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Colors.black),
           ),
           _isProcessing
               ? const SizedBox(
@@ -580,40 +580,41 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   }
 
   Widget _buildGuideButton() {
-    return Material(
+  return Material(
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      onTap: () => Navigator.pushNamed(context, '/example'),
       borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, '/example'),
-        borderRadius: BorderRadius.circular(12),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.lightbulb_outline, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                'Petunjuk Penggunaan',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+          children: const [
+            Icon(Icons.lightbulb_outline, color: Colors.white),
+            SizedBox(width: 8),
+            Text(
+              'Petunjuk Penggunaan',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
