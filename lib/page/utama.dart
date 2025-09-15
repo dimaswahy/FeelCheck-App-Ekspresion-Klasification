@@ -1,8 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
 import 'dart:io';
-import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart';
+import 'package:feelcheck/page/example.dart';
+import 'package:feelcheck/utils/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -39,6 +37,12 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   String _expressionLabel = "N/A";
   double _confidenceScore = 0.0;
 
+  // Constants
+  static const Duration _animationDuration = Duration(milliseconds: 600);
+  static const Duration _processingDelay = Duration(milliseconds: 50);
+  static const Duration _disclaimerDelay = Duration(milliseconds: 300);
+  static const Duration _resultDelay = Duration(seconds: 1);
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +58,11 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   // INITIALIZATION METHODS
   void _initializeComponents() {
     WidgetsBinding.instance.addObserver(this);
+    _initializeFaceDetector();
+    _schedulePageAnimation();
+  }
 
+  void _initializeFaceDetector() {
     _faceDetector = FaceDetector(
       options: FaceDetectorOptions(
         enableContours: false,
@@ -62,20 +70,17 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
         enableLandmarks: false,
       ),
     );
+  }
 
+  void _schedulePageAnimation() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _animatePageEntry();
     });
   }
 
   void _animatePageEntry() {
-    setState(() {
-      _pageVisible = true;
-    });
-    
-    Future.delayed(const Duration(milliseconds: 300), () {
-      _showDisclaimer();
-    });
+    setState(() => _pageVisible = true);
+    Future.delayed(_disclaimerDelay, _showDisclaimer);
   }
 
   void _cleanupResources() {
@@ -86,8 +91,8 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   // DIALOG METHODS
   Future<void> _showDisclaimer() async {
     if (_disclaimerShown) return;
-    
     _disclaimerShown = true;
+
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -96,44 +101,59 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   }
 
   Future<void> _showImagePickerOptions() async {
-    showModalBottomSheet(
+    await showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildModalHandle(),
-                const SizedBox(height: 20),
-                const Text(
-                  'Pilih Sumber Gambar',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _buildImageSourceTile(
-                  icon: Icons.photo_library,
-                  color: Colors.blue,
-                  title: 'Galeri',
-                  source: ImageSource.gallery,
-                ),
-                _buildImageSourceTile(
-                  icon: Icons.photo_camera,
-                  color: Colors.green,
-                  title: 'Kamera',
-                  source: ImageSource.camera,
-                ),
-              ],
+      builder: (BuildContext context) => _buildImagePickerBottomSheet(),
+    );
+  }
+
+  Widget _buildImagePickerBottomSheet() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildModalHandle(),
+            const SizedBox(height: 20),
+            _buildModalTitle(),
+            const SizedBox(height: 20),
+            _buildImageSourceTile(
+              icon: Icons.photo_library,
+              color: Colors.blue,
+              title: 'Galeri',
+              source: ImageSource.gallery,
             ),
-          ),
-        );
+            _buildImageSourceTile(
+              icon: Icons.photo_camera,
+              color: Colors.green,
+              title: 'Kamera',
+              source: ImageSource.camera,
+            ),
+            _buildGuideTile(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalTitle() {
+    return const Text(
+      'Pilih Sumber Gambar',
+      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    );
+  }
+
+  Widget _buildGuideTile() {
+    return ListTile(
+      leading: const Icon(Icons.lightbulb_outline, color: Colors.yellow),
+      title: const Text('Petunjuk Penggambilan Gambar'),
+      onTap: () {
+        Navigator.of(context).pop();
+        Navigator.pushNamed(context, '/example');
       },
     );
   }
@@ -147,74 +167,74 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return Align(
-          alignment: Alignment.bottomCenter,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              bottom: 40,
-              left: 20,
-              right: 20,
-            ),
-            child: Material(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-              elevation: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Konfirmasi Ekspresi',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Ekspresi terdeteksi:\n"$detectedExpression"',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildConfirmationButton(
-                          text: 'Ya, Benar',
-                          color: Colors.green,
-                          onPressed: () => _handleCorrectDetection(
-                            box,
-                            detectedExpression,
-                            imagePath,
-                          ),
-                        ),
-                        _buildConfirmationButton(
-                          text: 'Coba Lagi',
-                          color: Colors.red,
-                          onPressed: () => _handleIncorrectDetection(
-                            box,
-                            detectedExpression,
-                            imagePath,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+      builder: (context) => _buildConfirmationDialog(
+        detectedExpression,
+        imagePath,
+        box,
+      ),
     );
   }
 
-  // IMAGE PROCESSING METHODS
+  Widget _buildConfirmationDialog(
+    String detectedExpression,
+    String imagePath,
+    Box<HistoryModel> box,
+  ) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 40, left: 20, right: 20),
+        child: Material(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          elevation: 10,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Konfirmasi Ekspresi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Ekspresi terdeteksi:\n"$detectedExpression"',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildConfirmationButton(
+                      text: 'Ya, Benar',
+                      color: Colors.green,
+                      onPressed: () => _handleCorrectDetection(
+                        box,
+                        detectedExpression,
+                        imagePath,
+                      ),
+                    ),
+                    _buildConfirmationButton(
+                      text: 'Coba Lagi',
+                      color: Colors.red,
+                      onPressed: () => _handleIncorrectDetection(
+                        box,
+                        detectedExpression,
+                        imagePath,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // IMAGE PROCESSING
   Future<void> _pickImage(ImageSource source) async {
     final image = await _picker.pickImage(source: source);
     if (image == null) return;
@@ -231,111 +251,57 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   Future<void> _processImage() async {
     if (_capturedImage == null) return;
 
-    setState(() => _isProcessing = true);
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future.delayed(_processingDelay);
 
     try {
-      final result = await _detectAndProcessFace();
-      await _classifyExpression(result);
+      final inputImage = InputImage.fromFile(_capturedImage!);
+      final faces = await _faceDetector.processImage(inputImage);
+
+      if (faces.isEmpty) {
+        setState(() {
+          _faceOnlyImage = null;
+          _expressionLabel = "Wajah tidak ditemukan";
+          _confidenceScore = 0.0;
+          _isProcessing = false;
+        });
+        return;
+      }
+
+      final croppedImage =
+          await decodeAndCrop(_capturedImage!, faces.first.boundingBox);
+      if (croppedImage == null) return;
+
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = 'face_${DateTime.now().millisecondsSinceEpoch}.png';
+      final croppedFile = File('${appDir.path}/$fileName');
+      await croppedFile.writeAsBytes(img.encodePng(croppedImage));
+
+      final tfliteHelper = TFLiteHelper();
+      await tfliteHelper.loadModel();
+      final result = await tfliteHelper.classifyImage(croppedFile);
+
+      if (result.isEmpty) return;
+
+      final best = result.entries.reduce((a, b) => a.value > b.value ? a : b);
+
+      setState(() {
+        _faceOnlyImage = croppedFile;
+        _expressionLabel = best.key;
+        _confidenceScore = best.value;
+        _isProcessing = false;
+      });
+
+      await Future.delayed(_resultDelay);
+      await _showConfirmationDialog(best.key, croppedFile.path);
     } catch (e) {
-      _handleProcessingError(e);
+      setState(() {
+        _expressionLabel = "Error: $e";
+        _confidenceScore = 0.0;
+        _isProcessing = false;
+      });
     }
   }
 
-  Future<File?> _detectAndProcessFace() async {
-    final inputImage = InputImage.fromFile(_capturedImage!);
-    final faces = await _faceDetector.processImage(inputImage);
-
-    if (faces.isEmpty) {
-      _updateStateNoFace();
-      return null;
-    }
-
-    final face = faces.first;
-    final croppedImage = await decodeAndCrop(_capturedImage!, face.boundingBox);
-
-    if (croppedImage == null) {
-      _updateStateImageError();
-      return null;
-    }
-
-    return await _saveCroppedImage(croppedImage);
-  }
-
-  Future<File> _saveCroppedImage(img.Image croppedImage) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    final croppedFile = File(
-      '${appDir.path}/face_${DateTime.now().millisecondsSinceEpoch}.png',
-    );
-    await croppedFile.writeAsBytes(img.encodePng(croppedImage));
-    return croppedFile;
-  }
-
-  Future<void> _classifyExpression(File? croppedFile) async {
-    if (croppedFile == null) return;
-
-    final tfliteHelper = TFLiteHelper();
-    await tfliteHelper.loadModel();
-
-    final result = await tfliteHelper.classifyImage(croppedFile);
-
-    String detectedResult = "Tidak terdeteksi";
-    double confidence = 0.0;
-
-    if (result.isNotEmpty) {
-      final best = result.entries.reduce(
-        (a, b) => a.value > b.value ? a : b,
-      );
-      detectedResult = best.key;
-      confidence = best.value;
-    }
-
-    _updateStateWithResult(croppedFile, detectedResult, confidence);
-    
-    await Future.delayed(const Duration(seconds: 1));
-    await _showConfirmationDialog(detectedResult, croppedFile.path);
-  }
-
-  // STATE UPDATE METHODS
-  void _updateStateNoFace() {
-    setState(() {
-      _faceOnlyImage = null;
-      _expressionLabel = "Wajah tidak ditemukan";
-      _confidenceScore = 0.0;
-      _isProcessing = false;
-    });
-  }
-
-  void _updateStateImageError() {
-    setState(() {
-      _expressionLabel = "Gagal membaca gambar";
-      _confidenceScore = 0.0;
-      _isProcessing = false;
-    });
-  }
-
-  void _updateStateWithResult(
-    File croppedFile,
-    String detectedResult,
-    double confidence,
-  ) {
-    setState(() {
-      _faceOnlyImage = croppedFile;
-      _expressionLabel = detectedResult;
-      _confidenceScore = confidence;
-      _isProcessing = false;
-    });
-  }
-
-  void _handleProcessingError(dynamic e) {
-    setState(() {
-      _expressionLabel = "Error: $e";
-      _confidenceScore = 0.0;
-      _isProcessing = false;
-    });
-  }
-
-  // CONFIRMATION HANDLERS
   Future<void> _handleCorrectDetection(
     Box<HistoryModel> box,
     String detectedExpression,
@@ -367,17 +333,15 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     _showImagePickerOptions();
   }
 
-  // UI BUILDER METHODS
-  Widget _buildModalHandle() {
-    return Container(
-      width: 40,
-      height: 4,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
+  // UI
+  Widget _buildModalHandle() => Container(
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(2),
+        ),
+      );
 
   Widget _buildImageSourceTile({
     required IconData icon,
@@ -404,14 +368,136 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      child: Text(text, style: const TextStyle(color: Colors.white)),
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3F2FD).withOpacity(0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Column(
+        children: [
+          Text(
+            "Selamat Datang Di FeelCheck",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          SizedBox(height: 2),
+          Text(
+            "Kenali dan pahami emosimu hari ini",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black87, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: _buildBody(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white),
+      title: const Text(
+        "FeelCheck",
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Cursive',
+          color: Colors.white,
+        ),
       ),
+      centerTitle: true,
+      elevation: 0,
+    );
+  }
+
+  Widget _buildBody() {
+    return Stack(
+      children: [
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFE3F2FD), Color(0xFFFFFFFF)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: SvgPicture.asset(
+            'assets/illustration/background_pattern.svg',
+            fit: BoxFit.cover,
+            colorFilter:
+                ColorFilter.mode(Colors.white.withOpacity(0.15), BlendMode.srcATop),
+          ),
+        ),
+        AnimatedOpacity(
+          opacity: _pageVisible ? 1.0 : 0.0,
+          duration: _animationDuration,
+          curve: Curves.easeInOut,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 2),
+                  Image.asset('assets/logo/logo edit new.png', width: 100)
+                      .animate()
+                      .fadeIn(duration: 600.ms)
+                      .scale(),
+                  const SizedBox(height: 10),
+                  _buildWelcomeSection(),
+                  const SizedBox(height: 27),
+                  _buildImagePreviewContainer()
+                      .animate()
+                      .fadeIn(delay: 300.ms)
+                      .slideY(begin: 0.2),
+                  const SizedBox(height: 32),
+                  _buildExpressionDisplay()
+                      .animate()
+                      .fadeIn(delay: 500.ms)
+                      .slideY(begin: 0.2),
+                  const SizedBox(height: 32),
+                  _buildUploadButton()
+                      .animate()
+                      .fadeIn(delay: 700.ms)
+                      .slideY(begin: 0.2),
+                  const SizedBox(height: 20),
+                  _buildHistoryButton()
+                      .animate()
+                      .fadeIn(delay: 900.ms)
+                      .slideY(begin: 0.2),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -433,32 +519,29 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
-        child: _buildImagePreviewContent(),
+        child: _isProcessing
+            ? const Center(child: CircularProgressIndicator())
+            : _faceOnlyImage != null
+                ? Image.file(_faceOnlyImage!, fit: BoxFit.cover)
+                : _buildEmptyImageContent(),
       ),
     );
   }
 
-  Widget _buildImagePreviewContent() {
-    if (_isProcessing) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_faceOnlyImage != null) {
-      return Image.file(_faceOnlyImage!, fit: BoxFit.cover);
-    }
-
+  Widget _buildEmptyImageContent() {
+    final isImageCaptured = _capturedImage != null;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SvgPicture.asset(
-          _capturedImage == null
-              ? 'assets/illustration/empty_picture.svg'
-              : 'assets/illustration/empty_face.svg',
+          isImageCaptured
+              ? 'assets/illustration/empty_face.svg'
+              : 'assets/illustration/empty_picture.svg',
           width: 100,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Text(
-          _capturedImage == null ? 'Belum ada gambar' : 'Tidak ada wajah',
+          isImageCaptured ? 'Tidak ada wajah' : 'Belum ada gambar',
           style: const TextStyle(color: Colors.grey),
         ),
       ],
@@ -476,10 +559,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Ekspresi:',
-            style: TextStyle(color: Colors.black),
-          ),
+          const Text('Ekspresi:', style: TextStyle(color: Colors.black)),
           _isProcessing
               ? const SizedBox(
                   width: 20,
@@ -487,19 +567,14 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
-                  _buildExpressionText(),
+                  _confidenceScore > 0
+                      ? '$_expressionLabel (${(_confidenceScore * 100).toStringAsFixed(1)}%)'
+                      : _expressionLabel,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
         ],
       ),
     );
-  }
-
-  String _buildExpressionText() {
-    if (_confidenceScore > 0) {
-      return '$_expressionLabel (${(_confidenceScore * 100).toStringAsFixed(1)}%)';
-    }
-    return _expressionLabel;
   }
 
   Widget _buildUploadButton() {
@@ -513,7 +588,6 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          elevation: 2,
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
         ),
@@ -529,195 +603,93 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
           child: Container(
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: _buildButtonContent(),
+            child: _isProcessing
+                ? const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        'Memproses...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.camera_alt_outlined, color: Colors.white),
+                      SizedBox(width: 6),
+                      Text(
+                        'Unggah Gambar',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildButtonContent() {
-    if (_isProcessing) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ),
-          SizedBox(width: 12),
-          Text(
-            'Memproses...',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(Icons.camera_alt_outlined, color: Colors.white),
-        SizedBox(width: 8),
-        Text(
-          'Unggah Gambar',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+  Widget _buildHistoryButton() {
+  return SizedBox(
+    width: double.infinity,
+    height: 56,
+    child: ElevatedButton(
+      onPressed: () => Navigator.pushNamed(context, '/riwayat'),
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-      ],
-    );
-  }
-
-  Widget _buildGuideButton() {
-  return Material(
-    borderRadius: BorderRadius.circular(12),
-    child: InkWell(
-      onTap: () => Navigator.pushNamed(context, '/example'),
-      borderRadius: BorderRadius.circular(12),
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+      ),
       child: Ink(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
+            colors: [Color(0xFF2196F3), Color(0xFF0D47A1)], // Biru lebih soft
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: const [
-            Icon(Icons.lightbulb_outline, color: Colors.white),
-            SizedBox(width: 8),
-            Text(
-              'Petunjuk Penggunaan',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
+        child: Container(
+          alignment: Alignment.center,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.history, color: Colors.white),
+              SizedBox(width: 8),
+              Text(
+                'Lihat Riwayat',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),
   );
 }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        title: const Text(
-          "FeelCheck",
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Cursive',
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history, color: Colors.white),
-            tooltip: 'Riwayat',
-            onPressed: () => Navigator.pushNamed(context, '/riwayat'),
-          ),
-        ],
-      ),
-      body: AnimatedOpacity(
-        opacity: _pageVisible ? 1.0 : 0.0,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.easeInOut,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                Image.asset('assets/logo/logo edit.png', width: 100)
-                    .animate()
-                    .fadeIn()
-                    .scale(),
-                const SizedBox(height: 12),
-                const Text(
-                  "Selamat Datang Di FeelCheck",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Text(
-                  "Kenali dan pahami emosimu hari ini",
-                  style: TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 35),
-                _buildImagePreviewContainer(),
-                const SizedBox(height: 32),
-                _buildExpressionDisplay(),
-                const SizedBox(height: 32),
-                _buildUploadButton(),
-                const SizedBox(height: 20),
-                _buildGuideButton(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// HELPER CLASSES AND FUNCTIONS
-class CropParams {
-  final Uint8List bytes;
-  final Rect rect;
-  
-  CropParams(this.bytes, this.rect);
-}
-
-Future<img.Image?> decodeAndCrop(File file, Rect rect) async {
-  final bytes = await file.readAsBytes();
-  return compute(_decodeAndCropIsolate, CropParams(bytes, rect));
-}
-
-img.Image? _decodeAndCropIsolate(CropParams params) {
-  final decoded = img.decodeImage(params.bytes);
-  if (decoded == null) return null;
-
-  final cropX = params.rect.left.toInt().clamp(0, decoded.width - 1);
-  final cropY = params.rect.top.toInt().clamp(0, decoded.height - 1);
-  final cropW = params.rect.width.toInt().clamp(1, decoded.width - cropX);
-  final cropH = params.rect.height.toInt().clamp(1, decoded.height - cropY);
-
-  return img.copyCrop(
-    decoded,
-    x: cropX,
-    y: cropY,
-    width: cropW,
-    height: cropH,
-  );
 }

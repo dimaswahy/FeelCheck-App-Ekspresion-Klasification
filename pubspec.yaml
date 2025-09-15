@@ -83,16 +83,9 @@ flutter:
   assets:
     - assets/gambar/
     - assets/logo/
+    - assets/illustration/
     - assets/emosi.tflite
-    - assets/model_non.tflite
     - assets/label_klasifikasi.txt
-    - assets/illustration/empty_face.svg
-    - assets/illustration/camera_instruction.svg
-    - assets/illustration/empty_history.svg
-    - assets/illustration/empty_picture.svg
-
-
-
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

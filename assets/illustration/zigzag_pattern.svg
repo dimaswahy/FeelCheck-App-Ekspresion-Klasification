@@ -1,0 +1,31 @@
+<!-- assets/illustration/zigzag_pattern.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+  <path d="
+    M0 40 
+    Q5 35 10 40 
+    T20 40 
+    T30 40 
+    T40 40 
+    T50 40 
+    T60 40 
+    T70 40 
+    T80 40 
+    T90 40 
+    T100 40 
+    T110 40 
+    T120 40 
+    T130 40 
+    T140 40 
+    T150 40 
+    T160 40 
+    T170 40 
+    T180 40 
+    T190 40 
+    T200 40"
+    fill="none"
+    stroke="white"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-opacity="0.85"/>
+</svg>
