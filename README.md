@@ -13,7 +13,7 @@ Aplikasi ini menggunakan dataset **USK FEMO** yang berisi 5 kelas ekspresi wajah
 
 ## ✨ Fitur Utama
 
-- 📷 **Deteksi wajah real-time** melalui kamera.
+- 📷 **Klasifikasi wajah** melalui kamera.
 - 🤖 **Klasifikasi ekspresi** menjadi 5 kelas.
 - 🖼️ **Deteksi wajah dari gambar** yang diunggah.
 - 📊 Menampilkan **nilai confidence** hasil prediksi.
@@ -77,7 +77,7 @@ Model diekspor ke TensorFlow Lite untuk performa tinggi di perangkat mobile.
 ---
 
 ## APK Release
-Link Download : https://www.mediafire.com/file/s59zyxmxcz5zduv/app-release.apk/file
+Link Download : ...
 
 
 ---
