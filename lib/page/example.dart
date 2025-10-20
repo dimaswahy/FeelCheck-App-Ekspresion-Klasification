@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// Halaman ExamplePage
+/// Menampilkan petunjuk dan tips pengambilan gambar wajah agar hasil deteksi lebih akurat.
 class ExamplePage extends StatelessWidget {
   const ExamplePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Daftar tips yang akan ditampilkan dalam bentuk poin bernomor
     final List<String> tips = [
       'Pastikan wajah terlihat jelas dan tidak terhalang.',
       'Pencahayaan cukup (hindari cahaya belakang).',
       'Fokus dan tidak blur.',
-      'Buatlah Ekspresi wajah natural.',
+      'Buatlah ekspresi wajah natural.',
       'Posisi kamera sejajar dengan wajah.',
     ];
 
     return Scaffold(
+      // === BAGIAN ATAS (APPBAR) ===
       appBar: AppBar(
         flexibleSpace: Container(
+          // Memberikan efek gradasi biru pada AppBar
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
@@ -28,6 +33,7 @@ class ExamplePage extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
+          // Tombol kembali ke halaman sebelumnya
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -39,7 +45,9 @@ class ExamplePage extends StatelessWidget {
           ),
         ),
       ),
-      body: SizedBox.expand( // 🔧 memastikan stack selalu memenuhi layar
+
+      // === BAGIAN UTAMA (BODY) ===
+      body: SizedBox.expand( // memastikan Stack memenuhi seluruh layar
         child: Stack(
           children: [
             // === BACKGROUND GRADIENT ===
@@ -52,20 +60,22 @@ class ExamplePage extends StatelessWidget {
                 ),
               ),
             ),
-            // === BACKGROUND PATTERN ===
+
+            // === BACKGROUND PATTERN DARI FILE SVG ===
             Positioned.fill(
               child: SizedBox.expand(
                 child: SvgPicture.asset(
                   'assets/illustration/background_pattern.svg',
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.white.withOpacity(0.15),
+                    Colors.white.withOpacity(0.15), // membuat pola lebih lembut
                     BlendMode.srcATop,
                   ),
                 ),
               ),
             ),
-            // === MAIN CONTENT ===
+
+            // === ISI UTAMA HALAMAN ===
             SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -73,6 +83,8 @@ class ExamplePage extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const SizedBox(height: 5),
+
+                    // === GAMBAR CONTOH ===
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: Image.asset(
@@ -82,7 +94,10 @@ class ExamplePage extends StatelessWidget {
                         fit: BoxFit.cover,
                       ),
                     ),
+
                     const SizedBox(height: 24),
+
+                    // === KARTU YANG BERISI DAFTAR TIPS ===
                     Card(
                       elevation: 3,
                       shape: RoundedRectangleBorder(
@@ -102,7 +117,8 @@ class ExamplePage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            // Daftar tips dengan nomor otomatis
+
+                            // === LOOPING UNTUK MENAMPILKAN LIST TIPS ===
                             Column(
                               children: List.generate(tips.length, (index) {
                                 return Padding(
@@ -110,7 +126,7 @@ class ExamplePage extends StatelessWidget {
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Nomor di lingkaran kecil
+                                      // === NOMOR DALAM LINGKARAN KECIL ===
                                       Container(
                                         width: 24,
                                         height: 24,
@@ -120,7 +136,7 @@ class ExamplePage extends StatelessWidget {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            '${index + 1}',
+                                            '${index + 1}', // nomor urut
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
@@ -130,7 +146,8 @@ class ExamplePage extends StatelessWidget {
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      // Teks tips
+
+                                      // === TEKS TIPS ===
                                       Expanded(
                                         child: Text(
                                           tips[index],
@@ -146,19 +163,23 @@ class ExamplePage extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 24),
+
+                    // === TOMBOL KONFIRMASI "SAYA MENGERTI" ===
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
+                          backgroundColor: Colors.transparent, // agar gradien terlihat
                           shadowColor: Colors.transparent,
                           padding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
+                        // Ketika ditekan, kembali ke halaman sebelumnya
                         onPressed: () {
                           Navigator.pop(context);
                         },

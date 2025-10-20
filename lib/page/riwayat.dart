@@ -10,11 +10,16 @@ class RiwayatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Membuka box Hive yang menyimpan data riwayat
     final historyBox = Hive.box<HistoryModel>('historyBox');
+
+    // Format tanggal dan waktu untuk ditampilkan di list
     final dateFormat = DateFormat('dd MMM yyyy, HH:mm');
 
     return Scaffold(
+      // === BAGIAN APPBAR ===
       appBar: AppBar(
+        // Background gradient untuk AppBar
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -29,15 +34,18 @@ class RiwayatPage extends StatelessWidget {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
+        // Tombol kembali di kiri atas
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        // Tombol hapus semua riwayat di kanan atas
         actions: [
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.white),
             tooltip: 'Hapus Semua',
             onPressed: () async {
+              // Menampilkan dialog konfirmasi sebelum menghapus semua data
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -46,10 +54,12 @@ class RiwayatPage extends StatelessWidget {
                     "Hapus semua riwayat? Tindakan ini tidak dapat dibatalkan.",
                   ),
                   actions: [
+                    // Tombol batal
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
                       child: const Text("Batal"),
                     ),
+                    // Tombol hapus
                     ElevatedButton(
                       onPressed: () => Navigator.pop(context, true),
                       style: ElevatedButton.styleFrom(
@@ -60,6 +70,8 @@ class RiwayatPage extends StatelessWidget {
                   ],
                 ),
               );
+
+              // Jika pengguna menekan "Hapus", bersihkan semua isi box
               if (confirm == true) {
                 await historyBox.clear();
               }
@@ -67,7 +79,9 @@ class RiwayatPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SizedBox.expand( // <-- Tambahan penting agar background full screen
+
+      // === BAGIAN BODY ===
+      body: SizedBox.expand( // agar background menutupi seluruh layar
         child: Stack(
           children: [
             // === BACKGROUND GRADIENT ===
@@ -80,7 +94,8 @@ class RiwayatPage extends StatelessWidget {
                 ),
               ),
             ),
-            // === BACKGROUND PATTERN ===
+
+            // === BACKGROUND PATTERN SVG ===
             Positioned.fill(
               child: SvgPicture.asset(
                 'assets/illustration/background_pattern.svg',
@@ -91,10 +106,13 @@ class RiwayatPage extends StatelessWidget {
                 ),
               ),
             ),
-            // === MAIN CONTENT ===
+
+            // === KONTEN UTAMA (DAFTAR RIWAYAT) ===
             ValueListenableBuilder(
+              // Dengarkan perubahan pada box Hive secara real-time
               valueListenable: historyBox.listenable(),
               builder: (context, Box<HistoryModel> box, _) {
+                // Jika belum ada data riwayat
                 if (box.isEmpty) {
                   return Center(
                     child: Padding(
@@ -102,6 +120,7 @@ class RiwayatPage extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
+                          // Ilustrasi kosong
                           SvgPicture.asset(
                             'assets/illustration/empty_history.svg',
                             width: 150,
@@ -117,11 +136,14 @@ class RiwayatPage extends StatelessWidget {
                   );
                 }
 
+                // Balik urutan list agar data terbaru tampil di atas
                 final reversedItems = box.values.toList().reversed.toList();
 
+                // Tampilkan daftar riwayat
                 return ListView.builder(
-                  itemCount: reversedItems.length + 1,
+                  itemCount: reversedItems.length + 1, // +1 untuk teks "Batas Akhir"
                   itemBuilder: (context, index) {
+                    // Bagian bawah daftar: teks "Batas Akhir"
                     if (index == reversedItems.length) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -134,11 +156,15 @@ class RiwayatPage extends StatelessWidget {
                       );
                     }
 
+                    // Ambil item riwayat berdasarkan index
                     final item = reversedItems[index];
+
+                    // Format teks confidence
                     final confidenceText = item.confidence == 0.0
                         ? "kepercayaan: N/A"
                         : "kepercayaan: ${(item.confidence * 100).toStringAsFixed(1)}%";
 
+                    // Kartu berisi data ekspresi wajah
                     return Card(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       elevation: 3,
@@ -147,6 +173,8 @@ class RiwayatPage extends StatelessWidget {
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(12),
+
+                        // Gambar hasil deteksi wajah
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.file(
@@ -156,6 +184,8 @@ class RiwayatPage extends StatelessWidget {
                             fit: BoxFit.cover,
                           ),
                         ),
+
+                        // Teks utama: ekspresi dan confidence
                         title: Text(
                           "Ekspresi: ${item.expression}\n"
                           "$confidenceText",
@@ -164,6 +194,8 @@ class RiwayatPage extends StatelessWidget {
                             fontSize: 16,
                           ),
                         ),
+
+                        // Subjudul: waktu dan status benar/salah
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: RichText(
@@ -173,9 +205,11 @@ class RiwayatPage extends StatelessWidget {
                                 color: Colors.grey,
                               ),
                               children: [
+                                // Waktu prediksi
                                 TextSpan(
                                   text: "${dateFormat.format(item.dateTime)}\n",
                                 ),
+                                // Status validasi hasil ekspresi
                                 TextSpan(
                                   text: item.isCorrect ? "Benar" : "Salah",
                                   style: TextStyle(
@@ -189,11 +223,14 @@ class RiwayatPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        isThreeLine: true,
+
+                        isThreeLine: true, // agar teks tidak terpotong
+
+                        // Tombol hapus satu riwayat
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                           onPressed: () async {
-                            await item.delete();
+                            await item.delete(); // hapus item dari Hive
                           },
                         ),
                       ),

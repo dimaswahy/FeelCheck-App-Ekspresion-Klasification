@@ -22,27 +22,38 @@ class UtamaPage extends StatefulWidget {
 }
 
 class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
-  // Core properties
-  File? _capturedImage;
-  File? _faceOnlyImage;
-  final ImagePicker _picker = ImagePicker();
-  late final FaceDetector _faceDetector;
+  // ============================
+  // VARIABEL INTI
+  // ============================
+  File? _capturedImage; // Gambar yang diambil dari kamera/galeri
+  File? _faceOnlyImage; // Gambar hasil crop wajah
+  final ImagePicker _picker = ImagePicker(); // Untuk mengambil gambar
+  late final FaceDetector _faceDetector; // Detektor wajah Google ML Kit
 
-  // State management
-  bool _isProcessing = false;
-  bool _disclaimerShown = false;
-  bool _pageVisible = false;
+  // ============================
+  // VARIABEL STATUS
+  // ============================
+  bool _isProcessing = false; // Apakah sedang memproses gambar
+  bool _disclaimerShown = false; // Apakah disclaimer sudah tampil
+  bool _pageVisible = false; // Untuk animasi masuk halaman
 
-  // Detection results
-  String _expressionLabel = "N/A";
-  double _confidenceScore = 0.0;
+  // ============================
+  // HASIL DETEKSI
+  // ============================
+  String _expressionLabel = "N/A"; // Label ekspresi wajah
+  double _confidenceScore = 0.0; // Tingkat kepercayaan model
 
-  // Constants
+  // ============================
+  // KONSTANTA DURASI
+  // ============================
   static const Duration _animationDuration = Duration(milliseconds: 600);
   static const Duration _processingDelay = Duration(milliseconds: 50);
   static const Duration _disclaimerDelay = Duration(milliseconds: 300);
   static const Duration _resultDelay = Duration(seconds: 1);
 
+  // ============================
+  // INISIALISASI AWAL
+  // ============================
   @override
   void initState() {
     super.initState();
@@ -55,13 +66,14 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // INITIALIZATION METHODS
+  // Inisialisasi seluruh komponen awal
   void _initializeComponents() {
     WidgetsBinding.instance.addObserver(this);
-    _initializeFaceDetector();
-    _schedulePageAnimation();
+    _initializeFaceDetector(); // Siapkan detektor wajah
+    _schedulePageAnimation(); // Jalankan animasi halaman
   }
 
+  // Inisialisasi detektor wajah ML Kit
   void _initializeFaceDetector() {
     _faceDetector = FaceDetector(
       options: FaceDetectorOptions(
@@ -72,23 +84,28 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Menjadwalkan animasi halaman
   void _schedulePageAnimation() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _animatePageEntry();
     });
   }
 
+  // Animasi transisi masuk halaman
   void _animatePageEntry() {
     setState(() => _pageVisible = true);
     Future.delayed(_disclaimerDelay, _showDisclaimer);
   }
 
+  // Membersihkan resource sebelum keluar
   void _cleanupResources() {
     WidgetsBinding.instance.removeObserver(this);
     _faceDetector.close();
   }
 
-  // DIALOG METHODS
+  // ============================
+  // DIALOG DISCLAIMER
+  // ============================
   Future<void> _showDisclaimer() async {
     if (_disclaimerShown) return;
     _disclaimerShown = true;
@@ -100,6 +117,9 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // ============================
+  // PILIH SUMBER GAMBAR
+  // ============================
   Future<void> _showImagePickerOptions() async {
     await showModalBottomSheet(
       context: context,
@@ -110,6 +130,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Bottom sheet untuk memilih kamera/galeri
   Widget _buildImagePickerBottomSheet() {
     return SafeArea(
       child: Container(
@@ -140,6 +161,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Judul bottom sheet
   Widget _buildModalTitle() {
     return const Text(
       'Pilih Sumber Gambar',
@@ -147,6 +169,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Tombol petunjuk pengambilan gambar
   Widget _buildGuideTile() {
     return ListTile(
       leading: const Icon(Icons.lightbulb_outline, color: Colors.yellow),
@@ -158,6 +181,9 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // ============================
+  // DIALOG KONFIRMASI EKSPRESI
+  // ============================
   Future<void> _showConfirmationDialog(
     String detectedExpression,
     String imagePath,
@@ -175,6 +201,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Tampilan dialog konfirmasi hasil deteksi
   Widget _buildConfirmationDialog(
     String detectedExpression,
     String imagePath,
@@ -234,7 +261,10 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
-  // IMAGE PROCESSING
+  // ============================
+  // PEMROSESAN GAMBAR
+  // ============================
+  // Fungsi untuk mengambil gambar dari kamera/galeri
   Future<void> _pickImage(ImageSource source) async {
     final image = await _picker.pickImage(source: source);
     if (image == null) return;
@@ -248,15 +278,18 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     await _processImage();
   }
 
+  // Proses deteksi wajah dan klasifikasi ekspresi
   Future<void> _processImage() async {
     if (_capturedImage == null) return;
 
     await Future.delayed(_processingDelay);
 
     try {
+      // Deteksi wajah menggunakan ML Kit
       final inputImage = InputImage.fromFile(_capturedImage!);
       final faces = await _faceDetector.processImage(inputImage);
 
+      // Jika wajah tidak ditemukan
       if (faces.isEmpty) {
         setState(() {
           _faceOnlyImage = null;
@@ -267,21 +300,25 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
         return;
       }
 
+      // Potong area wajah
       final croppedImage =
           await decodeAndCrop(_capturedImage!, faces.first.boundingBox);
       if (croppedImage == null) return;
 
+      // Simpan wajah hasil crop ke direktori aplikasi
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = 'face_${DateTime.now().millisecondsSinceEpoch}.png';
       final croppedFile = File('${appDir.path}/$fileName');
       await croppedFile.writeAsBytes(img.encodePng(croppedImage));
 
+      // Jalankan model TFLite untuk klasifikasi ekspresi
       final tfliteHelper = TFLiteHelper();
       await tfliteHelper.loadModel();
       final result = await tfliteHelper.classifyImage(croppedFile);
 
       if (result.isEmpty) return;
 
+      // Ambil hasil dengan confidence tertinggi
       final best = result.entries.reduce((a, b) => a.value > b.value ? a : b);
 
       setState(() {
@@ -291,9 +328,11 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
         _isProcessing = false;
       });
 
+      // Tampilkan dialog konfirmasi
       await Future.delayed(_resultDelay);
       await _showConfirmationDialog(best.key, croppedFile.path);
     } catch (e) {
+      // Tangani error
       setState(() {
         _expressionLabel = "Error: $e";
         _confidenceScore = 0.0;
@@ -302,6 +341,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     }
   }
 
+  // Simpan hasil yang benar ke riwayat
   Future<void> _handleCorrectDetection(
     Box<HistoryModel> box,
     String detectedExpression,
@@ -317,6 +357,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     Navigator.of(context).pop();
   }
 
+  // Jika hasil tidak benar → simpan dan minta ulang gambar
   Future<void> _handleIncorrectDetection(
     Box<HistoryModel> box,
     String detectedExpression,
@@ -333,7 +374,9 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     _showImagePickerOptions();
   }
 
-  // UI
+  // ============================
+  // BAGIAN UI
+  // ============================
   Widget _buildModalHandle() => Container(
         width: 40,
         height: 4,
@@ -343,6 +386,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
         ),
       );
 
+  // Tombol pilih kamera/galeri
   Widget _buildImageSourceTile({
     required IconData icon,
     required Color color,
@@ -359,6 +403,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Tombol konfirmasi (Ya / Coba lagi)
   Widget _buildConfirmationButton({
     required String text,
     required Color color,
@@ -374,6 +419,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Seksi sambutan di halaman utama
   Widget _buildWelcomeSection() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -403,6 +449,9 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // ============================
+  // STRUKTUR HALAMAN UTAMA
+  // ============================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -411,6 +460,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // AppBar dengan gradasi biru
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       flexibleSpace: Container(
@@ -436,9 +486,11 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Isi utama halaman
   Widget _buildBody() {
     return Stack(
       children: [
+        // Background gradient
         Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -448,6 +500,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
             ),
           ),
         ),
+        // Pola latar belakang SVG
         Positioned.fill(
           child: SvgPicture.asset(
             'assets/illustration/background_pattern.svg',
@@ -456,6 +509,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
                 ColorFilter.mode(Colors.white.withOpacity(0.15), BlendMode.srcATop),
           ),
         ),
+        // Konten utama dengan animasi
         AnimatedOpacity(
           opacity: _pageVisible ? 1.0 : 0.0,
           duration: _animationDuration,
@@ -501,6 +555,11 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // ============================
+  // WIDGET TAMBAHAN
+  // ============================
+
+  // Menampilkan gambar hasil deteksi
   Widget _buildImagePreviewContainer() {
     return Container(
       width: 280,
@@ -528,6 +587,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Tampilan ketika belum ada gambar/wajah
   Widget _buildEmptyImageContent() {
     final isImageCaptured = _capturedImage != null;
     return Column(
@@ -548,6 +608,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Menampilkan hasil ekspresi & confidence
   Widget _buildExpressionDisplay() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -577,6 +638,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Tombol unggah gambar
   Widget _buildUploadButton() {
     return SizedBox(
       width: double.infinity,
@@ -647,49 +709,50 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
     );
   }
 
+  // Tombol menuju halaman riwayat
   Widget _buildHistoryButton() {
-  return SizedBox(
-    width: double.infinity,
-    height: 56,
-    child: ElevatedButton(
-      onPressed: () => Navigator.pushNamed(context, '/riwayat'),
-      style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-      ),
-      child: Ink(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF2196F3), Color(0xFF0D47A1)], // Biru lebih soft
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () => Navigator.pushNamed(context, '/riwayat'),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
-          borderRadius: BorderRadius.circular(12),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
         ),
-        child: Container(
-          alignment: Alignment.center,
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.history, color: Colors.white),
-              SizedBox(width: 8),
-              Text(
-                'Lihat Riwayat',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2196F3), Color(0xFF0D47A1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            alignment: Alignment.center,
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.history, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  'Lihat Riwayat',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
