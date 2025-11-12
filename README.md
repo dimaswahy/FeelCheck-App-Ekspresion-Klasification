@@ -1,6 +1,7 @@
 # 📱 FeelCheck
 
-FeelCheck adalah aplikasi **klasifikasi ekspresi wajah** berbasis Flutter dengan model **TensorFlow Lite**.  
+FeelCheck adalah aplikasi klasifikasi ekspresi wajah berbasis Flutter yang memanfaatkan TensorFlow Lite (TFLite) untuk mengenali emosi manusia secara real-time melalui kamera.
+Aplikasi ini dirancang untuk membantu memahami suasana hati seseorang dengan cepat dan akurat menggunakan teknologi kecerdasan buatan (AI) dan visi komputer.
 Aplikasi ini menggunakan dataset **USK FEMO** yang berisi 5 kelas ekspresi wajah:
 
 - 😀 Senang
