@@ -22,11 +22,6 @@ class HistoryModel extends HiveObject {
   @HiveField(3)
   bool isCorrect;
 
-  /// Tingkat kepercayaan (confidence score) dari hasil klasifikasi
-  /// Nilainya antara 0.0 sampai 1.0 (misal: 0.85 = 85%)
-  @HiveField(4)
-  double confidence;
-
   /// Konstruktor utama untuk membuat objek [HistoryModel].
   /// Semua field wajib diisi saat membuat objek baru.
   HistoryModel({
@@ -34,6 +29,5 @@ class HistoryModel extends HiveObject {
     required this.imagePath,
     required this.dateTime,
     required this.isCorrect,
-    required this.confidence, // tambahkan juga di konstruktor
   });
 }

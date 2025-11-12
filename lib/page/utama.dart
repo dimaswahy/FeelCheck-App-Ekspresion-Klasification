@@ -41,7 +41,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   // HASIL DETEKSI
   // ============================
   String _expressionLabel = "N/A"; // Label ekspresi wajah
-  double _confidenceScore = 0.0; // Tingkat kepercayaan model
+ // Tingkat kepercayaan model
 
   // ============================
   // KONSTANTA DURASI
@@ -294,7 +294,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
         setState(() {
           _faceOnlyImage = null;
           _expressionLabel = "Wajah tidak ditemukan";
-          _confidenceScore = 0.0;
+          
           _isProcessing = false;
         });
         return;
@@ -324,7 +324,6 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       setState(() {
         _faceOnlyImage = croppedFile;
         _expressionLabel = best.key;
-        _confidenceScore = best.value;
         _isProcessing = false;
       });
 
@@ -335,7 +334,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       // Tangani error
       setState(() {
         _expressionLabel = "Error: $e";
-        _confidenceScore = 0.0;
+  
         _isProcessing = false;
       });
     }
@@ -352,7 +351,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       imagePath: imagePath,
       dateTime: DateTime.now(),
       isCorrect: true,
-      confidence: _confidenceScore,
+
     ));
     Navigator.of(context).pop();
   }
@@ -368,7 +367,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
       imagePath: imagePath,
       dateTime: DateTime.now(),
       isCorrect: false,
-      confidence: _confidenceScore,
+
     ));
     Navigator.of(context).pop();
     _showImagePickerOptions();
@@ -628,9 +627,7 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
-                  _confidenceScore > 0
-                      ? '$_expressionLabel (${(_confidenceScore * 100).toStringAsFixed(1)}%)'
-                      : _expressionLabel,
+                    _expressionLabel,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
         ],
