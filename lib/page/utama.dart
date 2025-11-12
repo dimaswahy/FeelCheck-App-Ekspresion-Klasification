@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:feelcheck/page/example.dart';
 import 'package:feelcheck/utils/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -41,7 +40,6 @@ class _UtamaPageState extends State<UtamaPage> with WidgetsBindingObserver {
   // HASIL DETEKSI
   // ============================
   String _expressionLabel = "N/A"; // Label ekspresi wajah
- // Tingkat kepercayaan model
 
   // ============================
   // KONSTANTA DURASI
